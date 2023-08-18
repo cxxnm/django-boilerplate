@@ -1,0 +1,5 @@
+#!/bin/bash
+
+python manage.py migrate --noinput
+python manage.py collectstatic --no-input --clear
+gunicorn -c gunicorn.py core.wsgi

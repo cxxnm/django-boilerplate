@@ -1,0 +1,77 @@
+version: '3'
+
+services:
+  db:
+    container_name: bonus-db
+    image: postgres:15
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    env_file: .env
+    ports:
+      - "5433:5432"
+
+  web:
+    container_name: bonus-backend
+    build: ./app/
+    volumes:
+      - ./app:/code
+      - static_data:/code/static
+      - media_data:/code/media
+    command: ./start
+    restart: always
+    env_file: .env
+    depends_on:
+      - db
+  
+  nginx:
+    container_name: bonus-web
+    image: nginx:1.23-alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./app:/code
+      - ./nginx/configuration/development:/etc/nginx/conf.d
+      - static_data:/code/static
+      - media_data:/code/media
+    command: nginx -g 'daemon off;'
+    restart: always
+    env_file: .env
+    depends_on:
+      - web
+
+  redis:
+    container_name: bonus-redis
+    image: redis:latest
+    ports:
+      - '6379:6379'
+
+  celery:
+    container_name: bonus-celery
+    build: app
+    volumes:
+      - ./app:/code
+    env_file: .env
+    command: celery -A core.celery worker -l info -Q default -n default
+    restart: always
+    depends_on:
+      - web
+      - redis
+
+  celery-beat:
+    container_name: bonus-celery-beat
+    build: app
+    volumes:
+      - ./app:/code
+    env_file: .env
+    command: celery -A core.celery beat -l info
+    restart: always
+    depends_on:
+      - web
+      - redis
+      - celery
+
+
+volumes:
+  postgres_data: {}
+  static_data: {}
+  media_data: {}
