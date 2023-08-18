@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     # local
     # 3rd party
+    'drf_yasg',
     "debug_toolbar",
 ]
 
