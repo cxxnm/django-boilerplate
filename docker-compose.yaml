@@ -2,7 +2,7 @@ version: '3'
 
 services:
   db:
-    container_name: bonus-db
+    container_name: db
     image: postgres:15
     volumes:
       - postgres_data:/var/lib/postgresql/data
@@ -11,7 +11,7 @@ services:
       - "5433:5432"
 
   web:
-    container_name: bonus-backend
+    container_name: backend
     build: ./app/
     volumes:
       - ./app:/code
@@ -24,7 +24,7 @@ services:
       - db
   
   nginx:
-    container_name: bonus-web
+    container_name: web
     image: nginx:1.23-alpine
     ports:
       - "80:80"
@@ -40,13 +40,13 @@ services:
       - web
 
   redis:
-    container_name: bonus-redis
+    container_name: redis
     image: redis:latest
     ports:
       - '6379:6379'
 
   celery:
-    container_name: bonus-celery
+    container_name: celery
     build: app
     volumes:
       - ./app:/code
@@ -58,7 +58,7 @@ services:
       - redis
 
   celery-beat:
-    container_name: bonus-celery-beat
+    container_name: celery-beat
     build: app
     volumes:
       - ./app:/code
